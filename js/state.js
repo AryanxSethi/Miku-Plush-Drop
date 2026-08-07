@@ -32,7 +32,9 @@ export const dom = {
   resetCollectBtn: document.getElementById('resetCollect'),
   progressBar: document.getElementById('progressBar'),
   collectCloseBtn: document.getElementById('collectClose'),
-  scrollTopBtn: document.getElementById('scrollTopBtn')
+  scrollTopBtn: document.getElementById('scrollTopBtn'),
+  progressCount: document.getElementById('progressCount'),
+  progressTotal: document.getElementById('progressTotal')
 };
 
 const { Engine, World, Bodies, Body, Composite, Pairs, Events } = Matter;

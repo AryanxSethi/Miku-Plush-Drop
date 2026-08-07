@@ -57,9 +57,11 @@ export function updateCollectionStats() {
     total++;
     if ((state.collection[p.key] || 0) > 0) got++;
   }
-  const { collectCount, collectTotal, progressBar } = state.dom;
+  const { collectCount, collectTotal, progressCount, progressTotal, progressBar } = state.dom;
   collectCount.textContent = got;
   collectTotal.textContent = total;
+  progressCount.textContent = got;
+  progressTotal.textContent = total;
   progressBar.style.width = total ? Math.round((got / total) * 100) + '%' : '0%';
   state.gridDirty = true; // mark grid for rebuild
 }
