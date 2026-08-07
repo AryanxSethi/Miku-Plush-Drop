@@ -6,15 +6,22 @@ A free fan-made **Vocaloid / Hatsune Miku** browser game: click anywhere to
 drop a random **Hatsune Miku plush**. Each plushy falls with
 2D [Matter.js](https://brm.io/matter-js/) physics and a pseudo-3D tumbling
 animation, settles into a pile, and is recorded in your collection. Plushies
-range over 100+ base designs plus a hidden **secret** set, each with its own
-weighting, glow, and sound.
+range over 100 base designs plus 7 hidden **secret** plushies, each with its
+own weighting, rarity glow, and sound.
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Dropping plushies](ss/website1.png) | ![Collection view](ss/website2.png) |
+| Dropping plushies onto the pile | Exploring your plush collection |
 
 ---
 
 ## Getting started
 
-The site **must be served over HTTP** (browser localStorage, ES modules, and
-image/audio loading work best over a local server). The project folder is
+The site **must be served over HTTP** (browser localStorage and ES modules
+work best over a local server). The project folder is
 `MikuPlushDrop/` and it can live **on any drive** (`C:`, `D:`, `E:`, ...) at any
 path — every file reference inside the project is relative, so nothing needs
 to change when you move it.
@@ -44,27 +51,31 @@ MikuPlushDrop/              # any drive, any path
 │  ├─ config.js             # all constants & tuning (rarities, weights, pity)
 │  ├─ state.js              # shared runtime state, DOM refs, Matter engine
 │  ├─ storage.js            # localStorage read/write + key normalization
-│  ├─ assets.js             # image/audio loading + fallback plushies
+│  ├─ assets.js             # image loading + fallback plushies
 │  ├─ rarity.js             # rarity assignment, weighted picks, pity logic
 │  ├─ audio.js              # WebAudio synth bank + playSound
 │  ├─ ui.js                 # toasts, collection stats/grid, panel control
 │  ├─ view.js               # rendering: halos, tumbling draw, baking
 │  ├─ world.js              # resize/bounds, DPR tuning, spawn, trim
 │  └─ game.js               # physics step, frame loop, collision impulses
-├─ images/                  # plush PNGs (plush_1.png … plush_100.png) + secret eva PNGs
-└─ assets/sound/            # optional audio: drop/pop/plush/miku/sound/boing/boom.*
+├─ images/                  # 100 plush PNGs (plush_1.png … plush_100.png) + 7 secret eva PNGs
+└─ ss/                      # screenshots used in this README
 ```
 
 ### Asset conventions
 
-- **Plushies**: drop `plush_<n>.png` (or `plush<n>.png`) into `images/`.
-  `loadPlushImages()` scans `plush_1 … plush_110` across `images/` and
-  `assets/plush/`. Anything that loads is added to the pool.
-- **Secrets**: the six `eva*.png` images are loaded as stealth plushies
-  (see [Secret rarity](#secret-rarity)).
-- **Sound**: `assets/sound/drop|pop|plush|miku|sound|boing.{mp3,wav,ogg,m4a}`
-  are used for normal drops; `assets/sound/boom.*` plays for secret drops.
-  If no audio files exist, the built-in WebAudio synth bank is used.
+- **Plushies**: drop `plush_<n>.png` into `images/`. `loadPlushImages()` loads
+  exactly `images/plush_1.png … images/plush_PLUSH_COUNT.png`, where
+  `PLUSH_COUNT` is set in `js/config.js`. Bump `PLUSH_COUNT` when you add more.
+- **Secrets**: every basename in `SECRET_PLUSHES` (`js/config.js`) is loaded
+  from `images/<name>.png` as a stealth plushie — currently seven `eva*.png`
+  images (see [Secret rarity](#secret-rarity)). Add a file to `images/` and
+  its name to `SECRET_PLUSHES` to introduce a new secret.
+- **Sound**: there are no audio files — all sounds are synthesized live with
+  the built-in WebAudio synth bank in `js/audio.js`.
+
+> Only files that actually exist on disk are requested, so the browser console
+> never shows 404 errors for image probes.
 
 ---
 
@@ -107,7 +118,8 @@ stay stable across reloads.
 - **Chance**: 1/1000 per drop (`SECRET_CHANCE`).
 - **Pity**: if 1000 dry drops pass (`SECRET_PITY`), the next drop is a
   guaranteed secret.
-- **Pick**: prefers an un-collected secret; otherwise uniform among the 6.
+- **Pick**: prefers an un-collected secret; otherwise uniform among all
+  registered secrets.
 - **Hidden**: secrets do not appear in the collection grid or the progress
   bar until first collected.
 - **Look & feel**: rainbow glow (animated hue), "Secret!" toast, boom sound.
@@ -160,11 +172,14 @@ collection is already complete**.
 
 ## Adding your own plushies
 
-1. Drop a `plush_N.png` into `images/`.
-2. (Optional) bump `MAX_PLUSH` / rarity weights in `js/config.js`.
-3. (Optional) give it a special rarity in `RARITY_OVERRIDES` or a weight in
+1. Drop `plush_N.png` into `images/` (`N` must be ≤ `PLUSH_COUNT`).
+2. Add a **new** patterned plush past the current max → bump `PLUSH_COUNT` in
+   `js/config.js` so it gets picked up.
+3. Add a secret plush → drop `name.png` in `images/` and add its basename to
+   `SECRET_PLUSHES` in `js/config.js`.
+4. (Optional) give it a special rarity in `RARITY_OVERRIDES` or a weight in
    `PLUSH_WEIGHTS`.
-4. Reload. It appears in the pool, weighted by its rarity tier × plush weight.
+5. Reload. It appears in the pool, weighted by its rarity tier × plush weight.
 
 ---
 
@@ -176,6 +191,8 @@ collection is already complete**.
 | `SECRET_CHANCE` | 1/1000 | per-drop secret probability |
 | `SECRET_PITY` | 1000 | dry drops until a guaranteed secret |
 | `MAX_PLUSH` | 150 | max concurrent plushies |
+| `PLUSH_COUNT` | 100 | number of `plush_<n>.png` files (≤ n) |
+| `SECRET_PLUSHES` | 7 eva names | secret image basenames loaded per drop |
 | `RARITY_TIERS.*.weight` | 40/25/18/10/5 | drop weight per tier |
 | `RARITY_OVERRIDES` | — | force rarity by plush key |
 | `PLUSH_WEIGHTS` | — | per-plush extra weight multiplier |

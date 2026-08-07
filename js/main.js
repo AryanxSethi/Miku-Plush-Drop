@@ -9,7 +9,7 @@
  */
 
 import { state } from './state.js';
-import { loadPlushImages, loadSounds } from './assets.js';
+import { loadPlushImages } from './assets.js';
 import { updateCollectionStats, renderCollectionGrid, setPanel } from './ui.js';
 import { spawnAt, resize } from './world.js';
 import { frame, wireCollisions } from './game.js';
@@ -194,8 +194,6 @@ export async function init() {
 
   // First frame now — HUD, hint and physics render before any asset is ready.
   requestAnimationFrame(frame);
-
-  loadSounds(); // optional; playSound falls back to WebAudio synth
 
   await loadPlushImages();
   pill.remove();

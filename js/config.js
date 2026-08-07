@@ -37,10 +37,14 @@ export const PLUSH_WEIGHTS = {
   'plush_96':0.001
 };
 
-/** Secret plush filenames (loaded from assets in order, basename = file stem).
+/** Secret plush filenames (loaded from images/ in order, basename = file stem).
  *  These drop at a 1/1000 roll with their own pity counter, are hidden from
  *  the collection until first collected, and use a rainbow glow + boom sound. */
-export const SECRET_PLUSHES = ['eva', 'eva_0', 'eva_1', 'eva_02', 'eva_08', 'eva_13'];
+export const SECRET_PLUSHES = ['eva', 'eva_0', 'eva_1', 'eva_02', 'eva_08', 'eva_13', 'eva_pen'];
+
+/** Number of patterned plush images `images/plush_1.png … plush_PLUSH_COUNT.png`.
+ *  Bump this when adding more plush_<n>.png files. */
+export const PLUSH_COUNT = 100;
 
 /** Target counts used as proportions when distributing rarities among
  *  plushies that have no override — scaled to the number of unassigned items. */

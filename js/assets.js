@@ -1,21 +1,21 @@
 /**
  * Miku Plush Drop — asset loading.
  *
- * Loads plush PNGs (patterned `plush_<n>.png` + secret basenames) into
- * `state.plushList`, loads drop/boom audio files, and provides canvas-drawn
- * fallback plushies if no PNGs load at all. All files come via the local HTTP
- * server, so serve the folder over HTTP (not file://).
+ * Loads plush PNGs (patterned `plush_<n>.png` under images/) into
+ * `state.plushList` and provides canvas-drawn fallback plushies if no PNGs
+ * load at all. Only requests files that actually exist — patterned plushies
+ * come from `images/plush_1.png … images/plush_PLUSH_COUNT.png` and secrets
+ * from `images/<name>.png` — so no probe URLs 404 in the console.
  *
- * Loading is parallel: candidate URLs are fetched with a small concurrency
- * cap, so the game becomes playable after a handful of round trips instead
- * of ~490 sequential requests.
+ * Loading is parallel: files are fetched with a small concurrency cap, so
+ * the game becomes playable after a handful of round trips.
  */
 
 import { state } from './state.js';
-import { SECRET_PLUSHES } from './config.js';
+import { SECRET_PLUSHES, PLUSH_COUNT } from './config.js';
 import { assignRarities } from './rarity.js';
 
-/** Max concurrent image/audio fetches (keeps the request spike polite). */
+/** Max concurrent image fetches (keeps the request spike polite). */
 const MAX_CONCURRENCY = 16;
 
 /**
@@ -30,21 +30,6 @@ function loadImage(url) {
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = url;
-  });
-}
-
-/**
- * Load an HTMLAudioElement, resolving null on failure.
- * @param {string} url
- * @returns {Promise<HTMLAudioElement|null>}
- */
-function loadAudio(url) {
-  return new Promise((resolve) => {
-    const a = new Audio();
-    a.preload = 'auto';
-    a.onloadeddata = () => resolve(a);
-    a.onerror = () => resolve(null);
-    a.src = url;
   });
 }
 
@@ -70,75 +55,34 @@ async function mapPooled(tasks) {
 }
 
 /**
- * Load all plush PNGs (patterned via plush_<n>.png and secret basenames) into
- * the shared plushList. Falls back to generated canvas plushies if nothing
- * loads, then assigns rarities.
+ * Load all plush PNGs: `images/plush_<n>.png` for 1..PLUSH_COUNT plus the
+ * secret images, into the shared plushList. Falls back to generated canvas
+ * plushies if nothing loads, then assigns rarities.
  */
 export async function loadPlushImages() {
-  const buckets = [];
-  for (let i = 1; i <= 110; i++) {
-    buckets.push({ urls: [`images/plush_${i}.png`, `images/plush${i}.png`], secret: false });
+  const urls = [];
+  for (let i = 1; i <= PLUSH_COUNT; i++) {
+    urls.push(`images/plush_${i}.png`);
   }
   for (const name of SECRET_PLUSHES) {
-    buckets.push({ urls: [`images/${name}.png`, `assets/plush/${name}.png`], secret: true });
+    urls.push(`images/${name}.png`);
   }
 
-  // Probe each plush's candidates concurrently; keep whichever resolves first
-  // so every plush costs ~1 round trip instead of up to 4 serial ones.
-  const firstWins = await mapPooled(buckets.map((b) => () => firstImage(b.urls)));
-
-  for (let i = 0; i < buckets.length; i++) {
-    const img = firstWins[i];
+  const settled = await mapPooled(urls.map((url) => () => loadImage(url)));
+  for (let i = 0; i < urls.length; i++) {
+    const img = settled[i];
     if (!img) continue;
+    const isSecret = i >= PLUSH_COUNT;
     state.plushList.push({
       img,
-      key: img.getAttribute('data-src'),
-      rarity: buckets[i].secret ? 'secret' : null,
-      secret: buckets[i].secret
+      key: urls[i],
+      rarity: isSecret ? 'secret' : null,
+      secret: isSecret
     });
   }
+
   if (!state.plushList.length) makeFallbackPlushes();
   assignRarities();
-}
-
-/**
- * Load the first URL in `urls` that resolves; tags the winner with its URL so
- * the caller can derive the plush key. Tries all candidates concurrently.
- * @param {string[]} urls
- * @returns {Promise<HTMLImageElement|null>}
- */
-async function firstImage(urls) {
-  const results = await mapPooled(urls.map((url) => () => loadImage(url)));
-  const winner = results.find((img) => img);
-  if (winner) {
-    winner.setAttribute('data-src', urls[results.indexOf(winner)]);
-  }
-  return winner || null;
-}
-
-/**
- * Load drop sounds (into state.sounds) and any secret "boom" file (into
- * state.booms). Cross-trains all audio formats so a single present file
- * satisfies it. Runs in parallel; audio is optional (synth fallback exists).
- */
-export async function loadSounds() {
-  const exts = ['mp3', 'wav', 'ogg', 'm4a'];
-  const names = ['drop', 'pop', 'plush', 'miku', 'sound', 'boing'];
-  const urls = [];
-  for (const name of names) {
-    for (const ext of exts) {
-      urls.push(`assets/sound/${name}.${ext}`);
-    }
-  }
-  for (const ext of exts) {
-    urls.push(`assets/sound/boom.${ext}`);
-  }
-  const settled = await mapPooled(urls.map((url) => () => loadAudio(url)));
-  settled.forEach((a) => {
-    if (!a) return;
-    if (a.src.includes('/boom.')) state.booms.push(a);
-    else state.sounds.push(a);
-  });
 }
 
 /**
