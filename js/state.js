@@ -25,6 +25,8 @@ export const dom = {
   collectTotal: document.getElementById('collectTotal'),
   clearBtn: document.getElementById('clearBtn'),
   muteBtn: document.getElementById('muteBtn'),
+  fxBtn: document.getElementById('fxBtn'),
+  themeBtn: document.getElementById('themeBtn'),
   hintEl: document.getElementById('hint'),
   panelEl: document.getElementById('collection'),
   gridEl: document.getElementById('collectionGrid'),
@@ -76,6 +78,7 @@ export const state = {
   // Counters / flags
   dropped: 0,
   muted: false,
+  fxStyle: 0, // index into audio.js FX_STYLES (persisted 'miku-plush-fx')
   idle: false,
   ready: false, // true once plush sprites are loaded and drops can spawn
   actx: null, // Lazily-created AudioContext

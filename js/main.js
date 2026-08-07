@@ -15,6 +15,7 @@ import { spawnAt, resize } from './world.js';
 import { frame, wireCollisions } from './game.js';
 import { loadLS, saveLS } from './storage.js';
 import { DPR_LEVELS } from './config.js';
+import { FX_STYLES } from './audio.js';
 
 const {
   countEl,
@@ -26,7 +27,9 @@ const {
   scrollEl,
   resetCollectBtn,
   collectCloseBtn,
-  scrollTopBtn
+  scrollTopBtn,
+  fxBtn,
+  themeBtn
 } = state.dom;
 
 // Clear pile: remove every dynamic body + visual and reset pair table, drop
@@ -55,6 +58,34 @@ muteBtn.addEventListener('click', (e) => {
   state.muted = !state.muted;
   muteBtn.textContent = state.muted ? 'Sound off' : 'Sound on';
   muteBtn.classList.toggle('off', state.muted);
+});
+
+// Theme: always starts light; the pill toggles and persists the choice.
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  themeBtn.textContent = theme === 'dark' ? 'Theme: Dark' : 'Theme: Light';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#0e232b' : '#39c5bb');
+}
+
+themeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  saveLS('miku-plush-theme', next);
+  applyTheme(next);
+});
+
+// Drop-sound style: cycle through the FX bank, persisted across visits.
+let fxIdx = Math.min(Math.max(parseInt(loadLS('miku-plush-fx', 0), 10) || 0, 0), FX_STYLES.length - 1);
+state.fxStyle = fxIdx;
+fxBtn.textContent = 'Fx: ' + FX_STYLES[fxIdx];
+
+fxBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  fxIdx = (fxIdx + 1) % FX_STYLES.length;
+  state.fxStyle = fxIdx;
+  fxBtn.textContent = 'Fx: ' + FX_STYLES[fxIdx];
+  saveLS('miku-plush-fx', fxIdx);
 });
 
 collectCloseBtn.addEventListener('click', (e) => {
@@ -161,18 +192,17 @@ document.addEventListener('pointerdown', (e) => {
 });
 
 // ---------- First-boot credit notice ----------
-// "All images are property of their respective creators" — shown once on the
-// first boot, remembered in localStorage so it never appears again.
-function showCreditNotice() {
+// "All images are property of their respective creators" — shown once, as a
+// second line inside the drop hint (never a separate element, so the two can
+// not overlap). Remembered in localStorage; the line drops off after 8s.
+function setupHint() {
   if (loadLS('miku-plush-credit-seen', false)) return;
   saveLS('miku-plush-credit-seen', true);
-  const notice = document.createElement('div');
-  notice.className = 'credit-notice';
-  notice.textContent = 'All images are property of their respective creators.';
-  notice.addEventListener('pointerdown', (e) => e.stopPropagation());
-  notice.addEventListener('click', () => notice.remove());
-  document.body.appendChild(notice);
-  setTimeout(() => notice.remove(), 8000);
+  const credit = document.createElement('span');
+  credit.className = 'credit';
+  credit.textContent = 'All images are property of their respective creators.';
+  hintEl.appendChild(credit);
+  setTimeout(() => credit.remove(), 8000);
 }
 
 /**
@@ -187,7 +217,8 @@ export async function init() {
   state.DPR = Math.min(DPR_LEVELS[state.dprIdx], window.devicePixelRatio || 1, 2);
   wireCollisions();
   resize();
-  showCreditNotice();
+  applyTheme(loadLS('miku-plush-theme', 'light'));
+  setupHint();
   state.ready = false;
 
   const pill = document.createElement('div');

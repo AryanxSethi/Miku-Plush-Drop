@@ -72,7 +72,8 @@ MikuPlushDrop/              # any drive, any path
   images (see [Secret rarity](#secret-rarity)). Add a file to `images/` and
   its name to `SECRET_PLUSHES` to introduce a new secret.
 - **Sound**: there are no audio files — all sounds are synthesized live with
-  the built-in WebAudio synth bank in `js/audio.js`.
+  the built-in WebAudio synth bank in `js/audio.js`. Pick a drop-sound style
+  with the **Fx** pill (see [Themes & sound](#themes--sound)).
 
 > Only files that actually exist on disk are requested, so the browser console
 > never shows 404 errors for image probes.
@@ -147,10 +148,25 @@ collection is already complete**.
 |-----|---------|
 | `miku-plush-collection` | `{ plush_key: count }` per collected plushy |
 | `miku-plush-rarity`     | `{ plush_key: rarity }` per assigned tier |
+| `miku-plush-theme`      | `"light"` \| `"dark"` (Theme pill; light is the default) |
+| `miku-plush-fx`         | index of the selected drop-sound style (Fx pill) |
 
 > Too many saves? The collection is only flattened to localStorage via a
 > debounced 500 ms timer (`scheduleCollectionSave()`), flushing on
 > `beforeunload`. In-memory mutations are instant.
+
+---
+
+## Themes & sound
+
+- **Theme**: light by default. The **Theme** pill in the HUD toggles the dark
+  theme and remembers your choice (`miku-plush-theme`); the page also applies
+  the saved theme before first paint so there is no flash. All colors live in
+  `:root` CSS variables, overridden under `html[data-theme="dark"]`.
+- **Sound styles**: the **Fx** pill cycles through synth styles for drop
+  sounds — `Surprise` (the original random mix, default), `Boing`, `Coins`,
+  `Pop`, `Wobble`, `Marimba`, and `Bubble`. The **Sound on/off** pill still
+  mutes everything, and secret plushies keep their boom in every style.
 
 ---
 
@@ -230,6 +246,7 @@ All plush images are property of their respective creators. This is a
 fan-made demo built for learning and fun — it is not affiliated with or
 endorsed by the original rights holders.
 
-> The website shows this notice once, on the first boot only; it is
+> The website shows this notice once on the first boot — as a second line
+> inside the drop hint (never a separate element, so nothing overlaps). It is
 > remembered in localStorage (`miku-plush-credit-seen`) so it doesn't appear
 > on subsequent visits.

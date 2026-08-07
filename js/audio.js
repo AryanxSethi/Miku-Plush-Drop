@@ -1,10 +1,10 @@
 /**
  * Miku Plush Drop — WebAudio synthesis.
  *
- * Lazily-created AudioContext plus a small bank of synth "drop" presets
- * (boing / coin / Y-pop / bounce) and a heftier secret "boom". These backstop
- * the game when no audio files are present; playSound prefers real files when
- * they exist and rate-limits playback.
+ * Lazily-created AudioContext plus a selectable bank of synth "drop" styles
+ * (Surprise / Boing / Coins / Pop / Wobble / Marimba / Bubble) and a heftier
+ * secret "boom". These backstop the game when no audio files are present;
+ * playSound prefers real files when they exist and rate-limits playback.
  */
 
 import { state } from './state.js';
@@ -147,8 +147,94 @@ function boomSynth(a) {
   src.start(t);
 }
 
-// List of synth functions cycled for normal drops when no sound files exist.
-const SYNTH_PRESETS = [boingSynth, coinSynth, yPopSynth, bounceSynth];
+function wobbleSynth(a, f) {
+  const t = a.currentTime;
+  const osc = a.createOscillator();
+  const gain = a.createGain();
+  const lfo = a.createOscillator();
+  const lfoG = a.createGain();
+  const f0 = 190 * f * (0.85 + Math.random() * 0.4);
+  osc.type = 'sine';
+  osc.frequency.value = f0;
+  lfo.type = 'sine';
+  lfo.frequency.value = 20 + Math.random() * 16;
+  lfoG.gain.value = f0 * 0.55;
+  lfo.connect(lfoG);
+  lfoG.connect(osc.frequency);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(0.28, t + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+  osc.connect(gain);
+  gain.connect(a.destination);
+  osc.start(t);
+  lfo.start(t);
+  osc.stop(t + 0.32);
+  lfo.stop(t + 0.32);
+}
+
+const PENTA = [523.25, 587.33, 659.25, 783.99, 880.0];
+
+function marimbaSynth(a, f) {
+  const t = a.currentTime;
+  const base = PENTA[(Math.random() * PENTA.length) | 0] * f;
+  for (const [mult, amp, dur] of [[1, 0.24, 0.34], [4, 0.06, 0.13]]) {
+    const osc = a.createOscillator();
+    const gain = a.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = base * mult;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(amp, t + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(gain);
+    gain.connect(a.destination);
+    osc.start(t);
+    osc.stop(t + dur + 0.02);
+  }
+}
+
+function bubbleSynth(a, f) {
+  const t = a.currentTime;
+  const dur = 0.1;
+  const osc = a.createOscillator();
+  const gain = a.createGain();
+  const f0 = 250 * f * (0.8 + Math.random() * 0.5);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(f0, t);
+  osc.frequency.exponentialRampToValueAtTime(f0 * 2.4, t + dur);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  osc.connect(gain);
+  gain.connect(a.destination);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+
+// Selectable drop-sound styles: each maps to the synth bank used for normal
+// drops (a random preset + slight pitch jitter per drop). 'Surprise' is the
+// original mixed bag and the default; secrets keep their boom in every style.
+export const FX_STYLES = ['Surprise', 'Boing', 'Coins', 'Pop', 'Wobble', 'Marimba', 'Bubble'];
+
+const FX_PRESETS = {
+  Surprise: [boingSynth, coinSynth, yPopSynth, bounceSynth],
+  Boing: [boingSynth, bounceSynth],
+  Coins: [coinSynth, coinSynth, bubbleSynth],
+  Pop: [yPopSynth, yPopSynth, bubbleSynth],
+  Wobble: [wobbleSynth],
+  Marimba: [marimbaSynth, marimbaSynth, coinSynth],
+  Bubble: [bubbleSynth, yPopSynth]
+};
+
+/**
+ * Play a normal drop sound using the selected FX style bank.
+ * @param {AudioContext} a
+ */
+function normalSynth(a) {
+  const name = FX_STYLES[state.fxStyle] || 'Surprise';
+  const bank = FX_PRESETS[name];
+  const f = Math.pow(2, (Math.random() - 0.5) * 0.35);
+  bank[(Math.random() * bank.length) | 0](a, f);
+}
 
 /**
  * Play a drop sound: a boom (booms array or boomSynth) for secret plushies,
@@ -178,7 +264,6 @@ export function playSound(secret) {
     c.volume = 0.55;
     c.play().catch(() => {});
   } else {
-    const f = Math.pow(2, (Math.random() - 0.5) * 0.35);
-    SYNTH_PRESETS[(Math.random() * SYNTH_PRESETS.length) | 0](a, f);
+    normalSynth(a);
   }
 }

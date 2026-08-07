@@ -65,6 +65,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script>
+  /* Apply the persisted theme before first paint so there's no flash. */
+  (function () {
+    try {
+      if (JSON.parse(localStorage.getItem('miku-plush-theme')) === 'dark') {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    } catch (e) {}
+  })();
+</script>
 </head>
 <body>
 <canvas id="game" role="application" aria-label="Miku Plush Drop — Hatsune Miku plushie dropping game canvas; click to drop plushies"></canvas>
@@ -90,6 +100,8 @@
     <button class="pill" id="collectBtn" type="button" data-tip="Open your plush collection"><b id="collectCount">0</b>/<span id="collectTotal">0</span> collected</button>
     <button class="pill" id="clearBtn" type="button" data-tip="Clear the pile">Clear pile</button>
     <button class="pill" id="muteBtn" type="button" data-tip="Toggle sound on/off">Sound on</button>
+    <button class="pill" id="fxBtn" type="button" data-tip="Choose a drop sound style">Fx: Surprise</button>
+    <button class="pill" id="themeBtn" type="button" data-tip="Switch between light and dark theme">Theme: Light</button>
   </div>
 </header>
 
@@ -112,7 +124,8 @@
   <button class="scroll-top" id="scrollTopBtn" type="button" aria-label="Scroll to top" data-tip="Back to top">&#8593;</button>
 </div>
 
-<!-- First-drops hint; elements removed when clicking outside UI -->
+<!-- First-drops hint; also carries the once-only credit line on first boot.
+     Elements removed when clicking outside UI. -->
 <div class="hint" id="hint">click anywhere — a Miku plush drops</div>
 
 <!-- Dependencies: Matter.js 0.19.0 (physics). The app logic loads as an ES
