@@ -23,9 +23,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Miku Plush Drop — drop & collect plushies</title>
-<meta name="description" content="Click anywhere to drop a random Hatsune Miku plush. Plushies tumble with Matter.js physics into a pile — collect 100+ designs plus hidden secret plushies, each with its own rarity, glow, and sound. A free fan-made browser toy.">
-<meta name="keywords" content="miku, hatsune miku, plush, plushie, physics toy, collection game, fan game, browser game, matter.js">
+<title>Miku Plush Drop — Hatsune Miku plushie dropping game | Vocaloid fun</title>
+<meta name="description" content="Miku Plush Drop — a free fan-made Hatsune Miku plush dropping game. Click anywhere to drop a random Vocaloid plushie that tumbles with physics into a pile; collect 100+ designs plus hidden secret plushies, each with its own rarity, glow, and sound. A Miku-themed browser toy for Hatsune Miku and Vocaloid fans.">
+<meta name="keywords" content="hatsune miku, miku, vocaloid, vocaloid game, hatsune miku game, miku plush, miku plushie, plushie dropping game, miku plush drop, miku drop, vocaloid fan game, hatsune miku fan game, miku collection game, plush, plushie, physics toy, collection game, fan game, browser game, free online game, miku fans, vocaloid fans, manga, anime game, idol, virtual singer, 初音ミク">
 <meta name="author" content="AryanxSethi">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#39c5bb">
@@ -33,14 +33,14 @@
 <!-- Open Graph (social previews) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Miku Plush Drop">
-<meta property="og:title" content="Miku Plush Drop — drop & collect plushies">
-<meta property="og:description" content="Click anywhere to drop a random Hatsune Miku plush. Collect 100+ designs plus hidden secret plushies — physics-powered, with rarity tiers, glow, and sound.">
+<meta property="og:title" content="Miku Plush Drop — Hatsune Miku plushie dropping game">
+<meta property="og:description" content="Click anywhere to drop a random Hatsune Miku plushie that tumbles with physics into a pile. Collect 100+ Vocaloid-inspired designs plus hidden secrets — rarity tiers, glow, and sound. A free fan-made Miku toy.">
 <meta property="og:url" content="https://aryanxsethi.github.io/Miku-Plush-Drop/">
 <meta property="og:image" content="https://aryanxsethi.github.io/Miku-Plush-Drop/images/plush_1.png">
 <!-- Twitter card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Miku Plush Drop — drop & collect plushies">
-<meta name="twitter:description" content="Click anywhere to drop a random Hatsune Miku plush. Collect 100+ designs plus hidden secret plushies — physics-powered, with rarity tiers, glow, and sound.">
+<meta name="twitter:title" content="Miku Plush Drop — Hatsune Miku plushie dropping game">
+<meta name="twitter:description" content="Click anywhere to drop a random Hatsune Miku plushie that tumbles with physics into a pile. Collect 100+ Vocaloid-inspired designs plus hidden secrets — rarity tiers, glow, and sound.">
 <meta name="twitter:image" content="https://aryanxsethi.github.io/Miku-Plush-Drop/images/plush_1.png">
 <!-- Structured data (VideoGame) -->
 <script type="application/ld+json">
@@ -48,11 +48,13 @@
   "@context": "https://schema.org",
   "@type": "VideoGame",
   "name": "Miku Plush Drop",
-  "description": "Click anywhere to drop a random Hatsune Miku plush. Plushies tumble with physics into a pile; collect 100+ designs plus hidden secrets, each with its own rarity, glow, and sound.",
+  "alternateName": "Hatsune Miku Plush Drop",
+  "description": "Click anywhere to drop a random Hatsune Miku plushie. Plushies tumble with physics into a pile; collect 100+ Vocaloid-inspired designs plus hidden secrets, each with its own rarity, glow, and sound. A free fan-made game for Hatsune Miku and Vocaloid fans.",
   "url": "https://aryanxsethi.github.io/Miku-Plush-Drop/",
-  "genre": "Casual",
+  "genre": ["Casual", "Collecting", "Fan Game"],
   "applicationCategory": "Game",
   "author": { "@type": "Person", "name": "AryanxSethi" },
+  "keywords": "hatsune miku, vocaloid, miku plush, plushie dropping game, vocaloid fan game, 初音ミク",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" },
   "isAccessibleForFree": true,
   "operatingSystem": "Any (browser)"
@@ -65,15 +67,16 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="game" role="application" aria-label="Miku Plush Drop game canvas — click to drop plushies"></canvas>
+<canvas id="game" role="application" aria-label="Miku Plush Drop — Hatsune Miku plushie dropping game canvas; click to drop plushies"></canvas>
 
 <!-- Crawler/JS-off fallback: describes the page since the game needs JavaScript. -->
 <noscript>
   <div class="noscript-info">
-    <h2>Miku Plush Drop</h2>
-    <p>Click anywhere to drop a random Hatsune Miku plush. Plushies tumble with
-    2D physics into a pile — collect 100+ base designs plus hidden secret
-    plushies, each with its own rarity tier, glow, and sound.</p>
+    <h2>Miku Plush Drop — Hatsune Miku &amp; Vocaloid plushie collection game</h2>
+    <p>Click anywhere to drop a random Hatsune Miku plushie. Plushies tumble
+    with 2D physics into a pile — collect 100+ Vocaloid-inspired designs plus
+    hidden secret plushies, each with its own rarity tier, glow, and sound.
+    A free fan-made toy for Miku fans.</p>
     <p>This toy needs JavaScript. Enable JavaScript (or open it from a modern
     browser) to start dropping plushies.</p>
   </div>

@@ -1,8 +1,9 @@
-# Miku Plush Drop
+# Miku Plush Drop — Hatsune Miku plushie dropping game
 
 **Live demo:** <https://aryanxsethi.github.io/Miku-Plush-Drop/>
 
-Click anywhere to drop a random **Hatsune Miku plush**. Each plushy falls with
+A free fan-made **Vocaloid / Hatsune Miku** browser game: click anywhere to
+drop a random **Hatsune Miku plush**. Each plushy falls with
 2D [Matter.js](https://brm.io/matter-js/) physics and a pseudo-3D tumbling
 animation, settles into a pile, and is recorded in your collection. Plushies
 range over 100+ base designs plus a hidden **secret** set, each with its own

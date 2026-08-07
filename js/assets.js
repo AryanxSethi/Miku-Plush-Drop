@@ -5,11 +5,18 @@
  * `state.plushList`, loads drop/boom audio files, and provides canvas-drawn
  * fallback plushies if no PNGs load at all. All files come via the local HTTP
  * server, so serve the folder over HTTP (not file://).
+ *
+ * Loading is parallel: candidate URLs are fetched with a small concurrency
+ * cap, so the game becomes playable after a handful of round trips instead
+ * of ~490 sequential requests.
  */
 
 import { state } from './state.js';
 import { SECRET_PLUSHES } from './config.js';
 import { assignRarities } from './rarity.js';
+
+/** Max concurrent image/audio fetches (keeps the request spike polite). */
+const MAX_CONCURRENCY = 16;
 
 /**
  * Load an image, resolving null on failure so loaders keep going.
@@ -19,6 +26,7 @@ import { assignRarities } from './rarity.js';
 function loadImage(url) {
   return new Promise((resolve) => {
     const img = new Image();
+    img.decoding = 'async';
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = url;
@@ -41,50 +49,96 @@ function loadAudio(url) {
 }
 
 /**
+ * Run async tasks with at most MAX_CONCURRENCY in flight at once, preserving
+ * completion order. Resolves when every task has settled.
+ * @param {Array<() => Promise<T|null>>} tasks
+ * @returns {Promise<Array<T|null>>}
+ * @template T
+ */
+async function mapPooled(tasks) {
+  const results = new Array(tasks.length);
+  let next = 0;
+  async function worker() {
+    while (next < tasks.length) {
+      const i = next++;
+      results[i] = await tasks[i]();
+    }
+  }
+  const n = Math.min(MAX_CONCURRENCY, tasks.length);
+  await Promise.all(Array.from({ length: n }, worker));
+  return results;
+}
+
+/**
  * Load all plush PNGs (patterned via plush_<n>.png and secret basenames) into
  * the shared plushList. Falls back to generated canvas plushies if nothing
  * loads, then assigns rarities.
  */
 export async function loadPlushImages() {
-  const patterns = [];
+  const buckets = [];
   for (let i = 1; i <= 110; i++) {
-    patterns.push(
-      `images/plush_${i}.png`,
-      `images/plush${i}.png`,
-      `assets/plush/plush_${i}.png`,
-      `assets/plush/plush${i}.png`
-    );
-  }
-  for (const url of patterns) {
-    const img = await loadImage(url);
-    if (img) state.plushList.push({ img, key: url, rarity: null });
+    buckets.push({ urls: [`images/plush_${i}.png`, `images/plush${i}.png`], secret: false });
   }
   for (const name of SECRET_PLUSHES) {
-    const img = await loadImage(`images/${name}.png`) || await loadImage(`assets/plush/${name}.png`);
-    if (img) state.plushList.push({ img, key: `images/${name}.png`, rarity: 'secret', secret: true });
+    buckets.push({ urls: [`images/${name}.png`, `assets/plush/${name}.png`], secret: true });
+  }
+
+  // Probe each plush's candidates concurrently; keep whichever resolves first
+  // so every plush costs ~1 round trip instead of up to 4 serial ones.
+  const firstWins = await mapPooled(buckets.map((b) => () => firstImage(b.urls)));
+
+  for (let i = 0; i < buckets.length; i++) {
+    const img = firstWins[i];
+    if (!img) continue;
+    state.plushList.push({
+      img,
+      key: img.getAttribute('data-src'),
+      rarity: buckets[i].secret ? 'secret' : null,
+      secret: buckets[i].secret
+    });
   }
   if (!state.plushList.length) makeFallbackPlushes();
   assignRarities();
 }
 
 /**
+ * Load the first URL in `urls` that resolves; tags the winner with its URL so
+ * the caller can derive the plush key. Tries all candidates concurrently.
+ * @param {string[]} urls
+ * @returns {Promise<HTMLImageElement|null>}
+ */
+async function firstImage(urls) {
+  const results = await mapPooled(urls.map((url) => () => loadImage(url)));
+  const winner = results.find((img) => img);
+  if (winner) {
+    winner.setAttribute('data-src', urls[results.indexOf(winner)]);
+  }
+  return winner || null;
+}
+
+/**
  * Load drop sounds (into state.sounds) and any secret "boom" file (into
  * state.booms). Cross-trains all audio formats so a single present file
- * satisfies it.
+ * satisfies it. Runs in parallel; audio is optional (synth fallback exists).
  */
 export async function loadSounds() {
   const exts = ['mp3', 'wav', 'ogg', 'm4a'];
   const names = ['drop', 'pop', 'plush', 'miku', 'sound', 'boing'];
+  const urls = [];
   for (const name of names) {
     for (const ext of exts) {
-      const a = await loadAudio(`assets/sound/${name}.${ext}`);
-      if (a) state.sounds.push(a);
+      urls.push(`assets/sound/${name}.${ext}`);
     }
   }
   for (const ext of exts) {
-    const a = await loadAudio(`assets/sound/boom.${ext}`);
-    if (a) state.booms.push(a);
+    urls.push(`assets/sound/boom.${ext}`);
   }
+  const settled = await mapPooled(urls.map((url) => () => loadAudio(url)));
+  settled.forEach((a) => {
+    if (!a) return;
+    if (a.src.includes('/boom.')) state.booms.push(a);
+    else state.sounds.push(a);
+  });
 }
 
 /**

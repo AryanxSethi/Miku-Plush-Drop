@@ -14,6 +14,7 @@
  *   9. Tooltip (2s hover)
  *  10. First-boot credit notice
  *  11. noscript fallback
+ *  12. Loading pill
  */
 
 /* ---------- 1. Design tokens ---------- */
@@ -626,4 +627,32 @@ button.pill.off {
 .noscript-info h2 {
   margin-bottom: 10px;
   color: var(--teal);
+}
+
+/* ---------- 12. Loading pill (shown during boot) ---------- */
+.loading-pill {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 14px 26px;
+  border-radius: 999px;
+  background: rgba(21, 94, 99, 0.92);
+  color: #fff;
+  font-family: "Quicksand", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 30px rgba(21, 94, 99, 0.3);
+  z-index: 160;
+  animation: pillPulse 1.2s ease-in-out infinite;
+}
+@keyframes pillPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }

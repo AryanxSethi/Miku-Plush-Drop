@@ -74,6 +74,7 @@ export const state = {
   dropped: 0,
   muted: false,
   idle: false,
+  ready: false, // true once plush sprites are loaded and drops can spawn
   actx: null, // Lazily-created AudioContext
 
   // DPR auto-tuning

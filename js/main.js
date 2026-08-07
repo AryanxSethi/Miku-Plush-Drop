@@ -86,6 +86,10 @@ scrollTopBtn.addEventListener('click', (e) => {
 
 // Main interaction: clicking anywhere (outside UI panels/buttons) drops a
 // plushy; clicking the collect button toggles the panel; Escape closes it.
+// Clicks made while plushies are still loading are queued and flushed once
+// the sprites arrive, so the page is usable from first paint.
+const dropQueue = [];
+
 window.addEventListener('pointerdown', (e) => {
   if (e.target.closest('#collectBtn')) {
     e.stopPropagation();
@@ -98,6 +102,10 @@ window.addEventListener('pointerdown', (e) => {
     return;
   }
   hintEl.classList.add('used');
+  if (!state.ready) {
+    dropQueue.push({ x: e.clientX, y: e.clientY });
+    return;
+  }
   spawnAt(e.clientX, e.clientY);
 });
 
@@ -168,18 +176,36 @@ function showCreditNotice() {
 }
 
 /**
- * Boot sequence: wire collisions, size canvas, load images + sounds, populate
- * collection stats and grid, then start the animation loop.
+ * Boot sequence: wire collisions, size canvas, start rendering immediately,
+ * then load images + sounds in the background. The animation loop never waits
+ * on assets — clicks made while loading are queued and flushed on ready.
  */
 export async function init() {
   state.DPR = Math.min(DPR_LEVELS[state.dprIdx], window.devicePixelRatio || 1, 2);
   wireCollisions();
   resize();
   showCreditNotice();
-  await Promise.all([loadPlushImages(), loadSounds()]);
+  state.ready = false;
+
+  const pill = document.createElement('div');
+  pill.className = 'loading-pill';
+  pill.textContent = 'Loading plushies\u2026';
+  document.body.appendChild(pill);
+
+  // First frame now — HUD, hint and physics render before any asset is ready.
+  requestAnimationFrame(frame);
+
+  loadSounds(); // optional; playSound falls back to WebAudio synth
+
+  await loadPlushImages();
+  pill.remove();
+  state.ready = true;
   updateCollectionStats();
   renderCollectionGrid();
-  requestAnimationFrame(frame);
+  while (dropQueue.length) {
+    const d = dropQueue.shift();
+    spawnAt(d.x, d.y);
+  }
 }
 
 init();
