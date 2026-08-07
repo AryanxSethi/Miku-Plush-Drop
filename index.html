@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!--
+  Miku Plush Drop — page shell.
+
+  Anatomy:
+    #game                      → fullscreen Matter.js canvas (physics + rendering)
+    header.hud                 → title, drop counter, collection/clear/mute pills
+    #collection                → collection modal (progress + tile grid + reset)
+    #hint                      → first-drop hint that fades once you click
+    matter.min.js              → CDN physics engine (v0.19.0)
+    js/main.js                 → ES-module entry; app logic is split across
+                                 js/config|storage|state|assets|rarity|audio|
+                                 ui|view|world|game|main (.js)
+
+  Requirements:
+    * Must be served over HTTP (localStorage + ES modules/CORS all fine on a
+      plain static server, but file:// blocks some fetches).
+    * PNG assets live under images/ and audio under assets/sound/.
+    * The folder can be located on any drive (C:, D:, E:, ...) — all asset
+      references are relative.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miku Plush Drop</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2339c5bb'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23fff' font-family='sans-serif' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- Top HUD: title + live stats and buttons -->
+<header class="hud">
+  <h1 class="title">Miku Plush <span>Drop</span></h1>
+  <div class="stats">
+    <span class="pill counter"><b id="count">0</b> plush dropped</span>
+    <button class="pill" id="collectBtn" type="button"><b id="collectCount">0</b>/<span id="collectTotal">0</span> collected</button>
+    <button class="pill" id="clearBtn" type="button">Clear pile</button>
+    <button class="pill" id="muteBtn" type="button">Sound on</button>
+  </div>
+</header>
+
+<!-- Collection modal: head, progress bar, scrollable 5-col grid, scroll-top -->
+<div class="collection" id="collection">
+  <div class="collection-head">
+    <div class="collection-titlebar">
+      <span class="collection-title">Plush Collection</span>
+      <button class="mini" id="resetCollect" type="button">reset</button>
+    </div>
+    <button class="collect-close" id="collectClose" type="button" aria-label="Close">&#10005;</button>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <span class="progress-text"><b id="collectCount">0</b>/<span id="collectTotal">0</span></span>
+  </div>
+  <div class="collection-scroll" id="collectionScroll">
+    <div class="collection-grid" id="collectionGrid"></div>
+  </div>
+  <button class="scroll-top" id="scrollTopBtn" type="button" hidden aria-label="Scroll to top">&#8593;</button>
+</div>
+
+<!-- First-drops hint; elements removed when clicking outside UI -->
+<div class="hint" id="hint">click anywhere — a Miku plush drops</div>
+
+<!-- Dependencies: Matter.js 0.19.0 (physics). The app logic loads as an ES
+     module (js/main.js). ES modules require HTTP (CORS), so when the page is
+     opened directly via file:// a classic boot script shows a warning instead
+     and skips loading the modules. -->
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+<script>
+  (function () {
+    if (location.protocol === 'file:') {
+      var b = document.createElement('div');
+      b.className = 'file-warning';
+      var code = document.createElement('code');
+      code.textContent = 'python -m http.server 8000';
+      var h = document.createElement('b');
+      h.textContent = 'Open over HTTP to play';
+      b.appendChild(h);
+      b.appendChild(document.createTextNode('ES modules are blocked from file://. In this folder run '));
+      b.appendChild(code);
+      b.appendChild(document.createTextNode(' then open http://localhost:8000.'));
+      document.body.appendChild(b);
+      return;
+    }
+    var s = document.createElement('script');
+    s.type = 'module';
+    s.src = 'js/main.js';
+    document.body.appendChild(s);
+  })();
+</script>
+</body>
+</html>

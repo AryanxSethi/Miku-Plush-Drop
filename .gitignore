@@ -1,0 +1,19 @@
+# Local utility that renames new plush PNGs — not part of the site
+images/Renamer.py
+
+# Python bytecode / caches (in case the renamer runs in-tree)
+__pycache__/
+*.py[cod]
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editor junk
+.vscode/
+.idea/
+
+# Environment / secrets safety
+.env
+.env.*
