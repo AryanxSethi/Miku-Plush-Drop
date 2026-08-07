@@ -108,12 +108,17 @@ function drawPlushAt(g, body, v, x, y) {
 /**
  * Bake a sleeping plushy's final appearance (glow + image at rest) into an
  * offscreen canvas so sleeping bodies cost a single drawImage per frame.
+ * The canvas is clamped to BAKE_MAX so huge piles stay memory-bounded (a full
+ * 4K pile otherwise allocates ~140 MB of offscreen canvases); the sprite is
+ * never rendered larger than ~110 px on screen, so the cap is invisible.
  * @param {object} body
  * @param {object} v visual state (gains .baked / .bakedSize)
  */
 function bakeVisual(body, v) {
+  /** Max baked-canvas edge (px). */
+  const BAKE_MAX = 384;
   const pad = 14;
-  const size = Math.ceil(Math.max(v.w, v.h) * 2.4) + pad * 2;
+  const size = Math.min(Math.ceil(Math.max(v.w, v.h) * 2.4) + pad * 2, BAKE_MAX);
   const c = document.createElement('canvas');
   c.width = size;
   c.height = size;

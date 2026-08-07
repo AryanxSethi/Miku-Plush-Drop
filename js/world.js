@@ -3,12 +3,19 @@
  *
  * Viewport/canvas sizing + DPR auto-tuning, static boundary (floor/walls)
  * construction, dropping a plushy at a click point (rarity pick + pity streaks
- * + toast + collection + sound), and enforcing the MAX_PLUSH cap by removing
- * the oldest dynamic bodies.
+ * + toast + collection + sound), and enforcing the adaptive pile cap by
+ * removing the oldest dynamic bodies.
  */
 
 import { state, scheduleCollectionSave } from './state.js';
-import { DPR_LEVELS, MAX_PLUSH } from './config.js';
+import {
+  DPR_LEVELS,
+  PLUSH_DENSITY,
+  MAX_PLUSH_MIN,
+  MAX_PLUSH_MAX,
+  SIZE_SCALE_MIN,
+  SIZE_SCALE_MAX
+} from './config.js';
 import { pickPlush, pickSecret, shouldDropSecret } from './rarity.js';
 import { playSound } from './audio.js';
 import { showToast, updateCollectionStats } from './ui.js';
@@ -50,13 +57,28 @@ export function tuneDpr(now) {
 }
 
 /**
+ * Compute the live pile cap for the current viewport: viewport area divided
+ * by PLUSH_DENSITY, clamped to [MAX_PLUSH_MIN, MAX_PLUSH_MAX]. Big screens
+ * and small phones both fill their space without overloading the engine.
+ * @returns {number}
+ */
+export function effectiveMaxPlush() {
+  return Math.max(
+    MAX_PLUSH_MIN,
+    Math.min(MAX_PLUSH_MAX, Math.round((state.W * state.H) / PLUSH_DENSITY))
+  );
+}
+
+/**
  * Resize canvas + rebuild bounds bodies to match the new window size.
- * Marks visuals for re-bake and forces a physics re-step.
+ * Recomputes the adaptive pile cap and marks visuals for re-bake and forces
+ * a physics re-step.
  */
 export function resize() {
   const { canvas, ctx } = state.dom;
   state.W = window.innerWidth;
   state.H = window.innerHeight;
+  state.maxPlush = effectiveMaxPlush();
   canvas.width = Math.max(1, Math.round(state.W * state.DPR));
   canvas.height = Math.max(1, Math.round(state.H * state.DPR));
   canvas.style.width = state.W + 'px';
@@ -85,7 +107,7 @@ export function buildBounds() {
 /**
  * Drop a plushy at viewport coords: pick it, update pity streaks, show a
  * rarity toast, create the Matter body + visual, record collection, play
- * sound, and trim the world to MAX_PLUSH.
+ * sound, and trim the world to the adaptive pile cap (state.maxPlush).
  * @param {number} x
  * @param {number} y
  */
@@ -115,7 +137,13 @@ export function spawnAt(x, y) {
     showToast('Rare!', 'rare', x, y - 40);
   }
 
-  const w = 64 + Math.random() * 46;
+  // Plush size adapts to the screen: bigger plushies on large monitors so the
+  // pile fills the space with fewer bodies, slightly smaller on phones.
+  const sizeScale = Math.max(
+    SIZE_SCALE_MIN,
+    Math.min(SIZE_SCALE_MAX, Math.sqrt((state.W * state.H) / 2e6))
+  );
+  const w = (64 + Math.random() * 46) * sizeScale;
   const h = (w * p.img.height) / p.img.width;
   const body = Bodies.rectangle(x, y, w * 0.94, h * 0.94, {
     friction: 0.7,
@@ -160,14 +188,15 @@ export function spawnAt(x, y) {
 }
 
 /**
- * Enforce MAX_PLUSH by removing the oldest dynamic bodies (and their visuals)
- * until the live count fits. Removed bodies stay referenced in the engine's
- * pair table — handled by the pair cap in game.js step() and clear button.
+ * Enforce the adaptive pile cap by removing the oldest dynamic bodies (and
+ * their visuals) until the live count fits. Removed bodies stay referenced in
+ * the engine's pair table — handled by the pair cap in game.js step() and the
+ * clear button.
  */
 export function trim() {
   const { Composite, World } = state;
   const dynamic = Composite.allBodies(state.engine.world).filter((b) => !b.isStatic);
-  while (dynamic.length > MAX_PLUSH) {
+  while (dynamic.length > state.maxPlush) {
     const b = dynamic.shift();
     World.remove(state.engine.world, b);
     state.visuals.delete(b);

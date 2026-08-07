@@ -9,7 +9,7 @@
  */
 
 import { state } from './state.js';
-import { MAX_PLUSH, FRAME_STEP } from './config.js';
+import { FRAME_STEP } from './config.js';
 import { draw } from './view.js';
 import { tuneDpr } from './world.js';
 
@@ -28,9 +28,10 @@ export function step(now) {
   state.Engine.update(state.engine, 16.666);
 
   // Matter.js 0.19 keeps collision pairs involving sleeping bodies forever,
-  // even after the bodies are removed. Cap the pair table so per-frame cost
-  // stays bounded regardless of how many plushies have been dropped over time.
-  if (state.engine.pairs.list.length > MAX_PLUSH * 5) {
+  // even after the bodies are removed. Cap the pair table (scaled to the
+  // adaptive pile cap) so per-frame cost stays bounded regardless of how many
+  // plushies have been dropped over time.
+  if (state.engine.pairs.list.length > state.maxPlush * 5) {
     state.Pairs.clear(state.engine.pairs);
   }
 

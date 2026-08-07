@@ -88,7 +88,8 @@ MikuPlushDrop/              # any drive, any path
 3. Otherwise `pickPlush()` picks a plushy via weighted random selection.
 4. A Matter body drops in with an upward/angular velocity, tumbling to the
    floor and into the pile.
-5. On land — `trim()` — the pile is capped at `MAX_PLUSH` (150) bodies.
+5. On land — `trim()` — the pile is capped at `state.maxPlush` (adaptive:
+   `round(W×H / PLUSH_DENSITY)`, clamped to `[MAX_PLUSH_MIN, MAX_PLUSH_MAX]`).
 6. The drop is recorded in `collection[key]` and persisted to localStorage.
 
 ### Rarity system
@@ -155,18 +156,33 @@ collection is already complete**.
 
 ## Performance
 
-- **Pile cap**: physics world never exceeds `MAX_PLUSH` bodies.
+- **Adaptive pile cap**: the physics world never exceeds `state.maxPlush`,
+  computed from the viewport area (`state.maxPlush` in `world.js:resize`).
+  Small phones and 4K monitors both fill their screens evenly without
+  overloading the engine:
+
+  | Viewport | Cap |
+  |----------|----:|
+  | 390×844 (phone) | 90 |
+  | 1366×768 (laptop) | 90 |
+  | 1920×1080 (desktop) | 173 |
+  | 2560×1440 | 307 |
+  | 3840×2160 (4K) | 420 |
+- **Screen-size plush scaling**: plush spawn width is multiplied by
+  `clamp(sqrt(W×H/2e6), 0.9, 1.25)`, so big screens fill with slightly bigger
+  plushies (fewer bodies, less physics load) and phones get a tidier pile.
 - **Pair-table guard**: Matter.js 0.19 keeps sleeping collision pairs forever,
   even after bodies are removed, so `engine.pairs.list` grows without bound
   across many drops. `step()` periodically clears the pair table when the pair
-  count exceeds `MAX_PLUSH × 5`, keeping cost bounded. (Also cleared after
+  count exceeds `state.maxPlush × 5`, keeping cost bounded. (Also cleared after
   "Clear pile".)
+- **Baked sprites**: sleeping plushies are pre-rendered to an offscreen canvas
+  (`bakeVisual`, clamped to 384 px) so they cost a single `drawImage` per frame
+  and stay memory-bounded on huge piles.
 - **Idle heuristics**: once every plushy is asleep, the render loop stops
   stepping (`idle` flag + `physicsDirty`), until a drop/collision/resize.
 - **DPR auto-tune**: resolution lowers if frames get slow, and recovers when
   there's headroom.
-- **Baked sprites**: sleeping plushies are pre-rendered to an offscreen canvas
-  (`bakeVisual`) so they cost a single `drawImage` per frame.
 
 ---
 
@@ -190,7 +206,11 @@ collection is already complete**.
 | `PITY_DROPS` | 50 | drops until a guaranteed new plush |
 | `SECRET_CHANCE` | 1/1000 | per-drop secret probability |
 | `SECRET_PITY` | 1000 | dry drops until a guaranteed secret |
-| `MAX_PLUSH` | 150 | max concurrent plushies |
+| `PLUSH_DENSITY` | 12000 | viewport px² per plushy (lower = denser pile) |
+| `MAX_PLUSH_MIN` | 90 | smallest adaptive pile cap |
+| `MAX_PLUSH_MAX` | 420 | largest adaptive pile cap |
+| `SIZE_SCALE_MIN` | 0.9 | smallest spawn-size scale (phones) |
+| `SIZE_SCALE_MAX` | 1.25 | largest spawn-size scale (big monitors) |
 | `PLUSH_COUNT` | 100 | number of `plush_<n>.png` files (≤ n) |
 | `SECRET_PLUSHES` | 7 eva names | secret image basenames loaded per drop |
 | `RARITY_TIERS.*.weight` | 40/25/18/10/5 | drop weight per tier |

@@ -61,8 +61,21 @@ export const PITY_DROPS = 50;
 export const SECRET_CHANCE = 1 / 1000;
 /** Secret pity: force a secret after this many dry drops. */
 export const SECRET_PITY = 1000;
-/** Max concurrent plushies on screen (world). */
-export const MAX_PLUSH = 150;
+/** Pile capacity — adaptive. `PLUSH_DENSITY` is the viewport budget (px²) per
+ *  plushy: the live cap = clamp(round(W×H / PLUSH_DENSITY), MIN, MAX), so
+ *  small phones and 4K monitors both fill their screens without overloading
+ *  the physics/render loop. Lower density = denser pile. */
+export const PLUSH_DENSITY = 12000;
+/** Smallest allowed live cap (small screens / weak hardware). */
+export const MAX_PLUSH_MIN = 90;
+/** Largest allowed live cap (very large monitors). */
+export const MAX_PLUSH_MAX = 420;
+
+/** Spawn-size scaling bounds: plush width is multiplied by
+ *  clamp(sqrt(W×H / 2e6), SIZE_SCALE_MIN, SIZE_SCALE_MAX) so big screens fill
+ *  with slightly bigger plushies instead of only more of them. */
+export const SIZE_SCALE_MIN = 0.9;
+export const SIZE_SCALE_MAX = 1.25;
 /** Physics/render step interval in ms. */
 export const FRAME_STEP = 1000 / 60;
 /** DPR auto-tuning steps. */

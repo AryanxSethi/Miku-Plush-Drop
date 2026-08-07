@@ -13,7 +13,7 @@
  */
 
 import { loadLS, saveLS } from './storage.js';
-import { DPR_LEVELS } from './config.js';
+import { DPR_LEVELS, MAX_PLUSH_MAX } from './config.js';
 
 /** DOM element references (gathered once at boot). */
 export const dom = {
@@ -64,6 +64,9 @@ export const state = {
   W: 0,
   H: 0,
   DPR: 1,
+
+  // Adaptive live pile cap (recomputed on resize from PLUSH_DENSITY)
+  maxPlush: MAX_PLUSH_MAX,
 
   // Static boundary bodies
   ground: null,
