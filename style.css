@@ -13,6 +13,7 @@
  *   8. file:// warning banner
  *   9. Tooltip (2s hover)
  *  10. First-boot credit notice
+ *  11. noscript fallback
  */
 
 /* ---------- 1. Design tokens ---------- */
@@ -607,4 +608,22 @@ button.pill.off {
     opacity: 1;
     transform: translate(-50%, 0);
   }
+}
+
+/* ---------- 11. noscript fallback (crawlers / JS-off users) ---------- */
+.noscript-info {
+  max-width: 560px;
+  margin: 12vh auto 0;
+  padding: 24px 28px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 12px 40px rgba(21, 94, 99, 0.18);
+  color: var(--ink);
+  font-family: "Quicksand", sans-serif;
+  line-height: 1.55;
+}
+.noscript-info h2 {
+  margin-bottom: 10px;
+  color: var(--teal);
 }

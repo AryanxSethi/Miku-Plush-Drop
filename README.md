@@ -1,5 +1,7 @@
 # Miku Plush Drop
 
+**Live demo:** <https://aryanxsethi.github.io/Miku-Plush-Drop/>
+
 Click anywhere to drop a random **Hatsune Miku plush**. Each plushy falls with
 2D [Matter.js](https://brm.io/matter-js/) physics and a pseudo-3D tumbling
 animation, settles into a pile, and is recorded in your collection. Plushies

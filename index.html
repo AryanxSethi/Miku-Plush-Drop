@@ -23,7 +23,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Miku Plush Drop</title>
+<title>Miku Plush Drop — drop & collect plushies</title>
+<meta name="description" content="Click anywhere to drop a random Hatsune Miku plush. Plushies tumble with Matter.js physics into a pile — collect 100+ designs plus hidden secret plushies, each with its own rarity, glow, and sound. A free fan-made browser toy.">
+<meta name="keywords" content="miku, hatsune miku, plush, plushie, physics toy, collection game, fan game, browser game, matter.js">
+<meta name="author" content="AryanxSethi">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#39c5bb">
+<link rel="canonical" href="https://aryanxsethi.github.io/Miku-Plush-Drop/">
+<!-- Open Graph (social previews) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Miku Plush Drop">
+<meta property="og:title" content="Miku Plush Drop — drop & collect plushies">
+<meta property="og:description" content="Click anywhere to drop a random Hatsune Miku plush. Collect 100+ designs plus hidden secret plushies — physics-powered, with rarity tiers, glow, and sound.">
+<meta property="og:url" content="https://aryanxsethi.github.io/Miku-Plush-Drop/">
+<meta property="og:image" content="https://aryanxsethi.github.io/Miku-Plush-Drop/images/plush_1.png">
+<!-- Twitter card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Miku Plush Drop — drop & collect plushies">
+<meta name="twitter:description" content="Click anywhere to drop a random Hatsune Miku plush. Collect 100+ designs plus hidden secret plushies — physics-powered, with rarity tiers, glow, and sound.">
+<meta name="twitter:image" content="https://aryanxsethi.github.io/Miku-Plush-Drop/images/plush_1.png">
+<!-- Structured data (VideoGame) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Miku Plush Drop",
+  "description": "Click anywhere to drop a random Hatsune Miku plush. Plushies tumble with physics into a pile; collect 100+ designs plus hidden secrets, each with its own rarity, glow, and sound.",
+  "url": "https://aryanxsethi.github.io/Miku-Plush-Drop/",
+  "genre": "Casual",
+  "applicationCategory": "Game",
+  "author": { "@type": "Person", "name": "AryanxSethi" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock" },
+  "isAccessibleForFree": true,
+  "operatingSystem": "Any (browser)"
+}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2339c5bb'/%3E%3Ctext x='32' y='43' font-size='32' text-anchor='middle' fill='%23fff' font-family='sans-serif' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +65,19 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="game"></canvas>
+<canvas id="game" role="application" aria-label="Miku Plush Drop game canvas — click to drop plushies"></canvas>
+
+<!-- Crawler/JS-off fallback: describes the page since the game needs JavaScript. -->
+<noscript>
+  <div class="noscript-info">
+    <h2>Miku Plush Drop</h2>
+    <p>Click anywhere to drop a random Hatsune Miku plush. Plushies tumble with
+    2D physics into a pile — collect 100+ base designs plus hidden secret
+    plushies, each with its own rarity tier, glow, and sound.</p>
+    <p>This toy needs JavaScript. Enable JavaScript (or open it from a modern
+    browser) to start dropping plushies.</p>
+  </div>
+</noscript>
 
 <!-- Top HUD: title + live stats and buttons -->
 <header class="hud">

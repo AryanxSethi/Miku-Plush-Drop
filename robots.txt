@@ -1,0 +1,6 @@
+# Allow all crawlers to index the site.
+User-agent: *
+Allow: /
+
+# Sitemap location for search engines.
+Sitemap: https://aryanxsethi.github.io/Miku-Plush-Drop/sitemap.xml
