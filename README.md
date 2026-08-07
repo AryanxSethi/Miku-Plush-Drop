@@ -177,3 +177,15 @@ collection is already complete**.
 | `RARITY_OVERRIDES` | — | force rarity by plush key |
 | `PLUSH_WEIGHTS` | — | per-plush extra weight multiplier |
 | `DPR_LEVELS` | [1.25, 1.5, 2] | available resolutions |
+
+---
+
+## Credits & disclaimer
+
+All plush images are property of their respective creators. This is a
+fan-made demo built for learning and fun — it is not affiliated with or
+endorsed by the original rights holders.
+
+> The website shows this notice once, on the first boot only; it is
+> remembered in localStorage (`miku-plush-credit-seen`) so it doesn't appear
+> on subsequent visits.

@@ -11,6 +11,8 @@
  *   6. Scroll-to-top button
  *   7. Rarity toasts + keyframes
  *   8. file:// warning banner
+ *   9. Tooltip (2s hover)
+ *  10. First-boot credit notice
  */
 
 /* ---------- 1. Design tokens ---------- */
@@ -444,12 +446,26 @@ button.pill.off {
   justify-content: center;
   box-shadow: 0 6px 16px rgba(21, 94, 99, 0.16);
   z-index: 5;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.92);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Visible state: fade + slide + settle into place (drives the scroll listener). */
+.scroll-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
 
 .scroll-top:hover {
   border-color: var(--teal);
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1);
   box-shadow: 0 8px 20px rgba(57, 197, 187, 0.3);
 }
 
@@ -538,4 +554,57 @@ button.pill.off {
   border-radius: 6px;
   background: rgba(57, 197, 187, 0.16);
   color: var(--ink);
+}
+
+/* ---------- 9. Tooltip (shown after ~2s hover) ---------- */
+.tooltip {
+  position: fixed;
+  z-index: 300;
+  transform: translate(-50%, -100%);
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(21, 94, 99, 0.95);
+  color: #fff;
+  font-family: "Quicksand", sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 6px 16px rgba(21, 94, 99, 0.25);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.tooltip:not([hidden]) {
+  opacity: 1;
+}
+
+/* ---------- 10. First-boot credit notice ---------- */
+.credit-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 150;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 5px 16px rgba(21, 94, 99, 0.12);
+  color: var(--ink-soft);
+  font-family: "Quicksand", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  animation: noticeIn 0.4s ease both;
+}
+
+@keyframes noticeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
