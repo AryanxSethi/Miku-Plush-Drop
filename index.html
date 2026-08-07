@@ -71,6 +71,8 @@
     try {
       if (JSON.parse(localStorage.getItem('miku-plush-theme')) === 'dark') {
         document.documentElement.dataset.theme = 'dark';
+        var m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', '#0e232b');
       }
     } catch (e) {}
   })();

@@ -716,7 +716,16 @@ html[data-theme="dark"] .file-warning {
 
 /* ---------- 13. Mobile & small screens ---------- */
 /* HUD stacks and wraps so no nav pill gets cut off on narrow screens; the
-   collection modal hugs the viewport and the hint respects safe areas. */
+   collection modal hugs the viewport and the hint respects safe areas.
+   The mid-width rule lets the stat pills wrap into rows instead of being
+   squeezed (their labels wrapping) up to ~1100px, where the row fits. */
+@media (max-width: 1100px) {
+  .stats {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
 @media (max-width: 720px) {
   .hud {
     flex-direction: column;
