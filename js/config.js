@@ -65,17 +65,17 @@ export const SECRET_PITY = 1000;
  *  plushy: the live cap = clamp(round(W×H / PLUSH_DENSITY), MIN, MAX), so
  *  small phones and 4K monitors both fill their screens without overloading
  *  the physics/render loop. Lower density = denser pile. */
-export const PLUSH_DENSITY = 12000;
+export const PLUSH_DENSITY = 6200;
 /** Smallest allowed live cap (small screens / weak hardware). */
-export const MAX_PLUSH_MIN = 90;
+export const MAX_PLUSH_MIN = 50;
 /** Largest allowed live cap (very large monitors). */
-export const MAX_PLUSH_MAX = 420;
+export const MAX_PLUSH_MAX = 500;
 
 /** Spawn-size scaling bounds: plush width is multiplied by
  *  clamp(sqrt(W×H / 2e6), SIZE_SCALE_MIN, SIZE_SCALE_MAX) so big screens fill
  *  with slightly bigger plushies instead of only more of them. */
-export const SIZE_SCALE_MIN = 0.9;
-export const SIZE_SCALE_MAX = 1.25;
+export const SIZE_SCALE_MIN = 0.95;
+export const SIZE_SCALE_MAX = 1.4;
 /** Physics/render step interval in ms. */
 export const FRAME_STEP = 1000 / 60;
 /** DPR auto-tuning steps. */

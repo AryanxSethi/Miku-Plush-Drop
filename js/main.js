@@ -177,8 +177,11 @@ function showCreditNotice() {
 
 /**
  * Boot sequence: wire collisions, size canvas, start rendering immediately,
- * then load images + sounds in the background. The animation loop never waits
- * on assets — clicks made while loading are queued and flushed on ready.
+ * then load images progressively. The animation loop never waits on assets —
+ * the game unlocks as soon as the first batch of plushies is ready (clicks
+ * made before that are queued and flushed), and the remaining images stream
+ * in the background. When the pool finishes growing the collection stats and
+ * grid refresh once more.
  */
 export async function init() {
   state.DPR = Math.min(DPR_LEVELS[state.dprIdx], window.devicePixelRatio || 1, 2);
@@ -195,9 +198,29 @@ export async function init() {
   // First frame now — HUD, hint and physics render before any asset is ready.
   requestAnimationFrame(frame);
 
-  await loadPlushImages();
-  pill.remove();
-  state.ready = true;
+  // Unlock after the first chunk so early clicks never feel blocked; refresh
+  // stats as the rest streams in.
+  let unlocked = false;
+  await loadPlushImages((done, total) => {
+    if (!unlocked && done >= 8) {
+      unlocked = true;
+      pill.remove();
+      state.ready = true;
+      updateCollectionStats();
+      while (dropQueue.length) {
+        const d = dropQueue.shift();
+        spawnAt(d.x, d.y);
+      }
+    }
+    if (state.ready) updateCollectionStats();
+  });
+
+  // Pool fully grown (or stream finished) — final refresh + grid render.
+  if (!unlocked) {
+    unlocked = true;
+    pill.remove();
+    state.ready = true;
+  }
   updateCollectionStats();
   renderCollectionGrid();
   while (dropQueue.length) {

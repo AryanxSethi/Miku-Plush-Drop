@@ -163,13 +163,17 @@ collection is already complete**.
 
   | Viewport | Cap |
   |----------|----:|
-  | 390×844 (phone) | 90 |
-  | 1366×768 (laptop) | 90 |
-  | 1920×1080 (desktop) | 173 |
-  | 2560×1440 | 307 |
-  | 3840×2160 (4K) | 420 |
+  | 390×844 (phone) | 50 |
+  | 1366×768 (laptop) | 169 |
+  | 1920×1080 (desktop) | 334 |
+  | 2560×1440 | 500 |
+  | 3840×2160 (4K) | 500 |
+- **Progressive asset loading**: `loadPlushImages()` streams the images in
+  chunks; the game unlocks as soon as the first chunk (8 plushies) is ready
+  and the rest load in the background. The HUD is never blocked on the full
+  ~38 MB download — first-useful-frame comes fast even on slow connections.
 - **Screen-size plush scaling**: plush spawn width is multiplied by
-  `clamp(sqrt(W×H/2e6), 0.9, 1.25)`, so big screens fill with slightly bigger
+  `clamp(sqrt(W×H/2e6), 0.95, 1.4)`, so big screens fill with slightly bigger
   plushies (fewer bodies, less physics load) and phones get a tidier pile.
 - **Pair-table guard**: Matter.js 0.19 keeps sleeping collision pairs forever,
   even after bodies are removed, so `engine.pairs.list` grows without bound
@@ -206,11 +210,11 @@ collection is already complete**.
 | `PITY_DROPS` | 50 | drops until a guaranteed new plush |
 | `SECRET_CHANCE` | 1/1000 | per-drop secret probability |
 | `SECRET_PITY` | 1000 | dry drops until a guaranteed secret |
-| `PLUSH_DENSITY` | 12000 | viewport px² per plushy (lower = denser pile) |
-| `MAX_PLUSH_MIN` | 90 | smallest adaptive pile cap |
-| `MAX_PLUSH_MAX` | 420 | largest adaptive pile cap |
-| `SIZE_SCALE_MIN` | 0.9 | smallest spawn-size scale (phones) |
-| `SIZE_SCALE_MAX` | 1.25 | largest spawn-size scale (big monitors) |
+| `PLUSH_DENSITY` | 6200 | viewport px² per plushy (lower = denser pile) |
+| `MAX_PLUSH_MIN` | 50 | smallest adaptive pile cap (phones — tuned for GPU) |
+| `MAX_PLUSH_MAX` | 500 | largest adaptive pile cap |
+| `SIZE_SCALE_MIN` | 0.95 | smallest spawn-size scale (phones) |
+| `SIZE_SCALE_MAX` | 1.4 | largest spawn-size scale (big monitors) |
 | `PLUSH_COUNT` | 100 | number of `plush_<n>.png` files (≤ n) |
 | `SECRET_PLUSHES` | 7 eva names | secret image basenames loaded per drop |
 | `RARITY_TIERS.*.weight` | 40/25/18/10/5 | drop weight per tier |

@@ -55,11 +55,17 @@ async function mapPooled(tasks) {
 }
 
 /**
- * Load all plush PNGs: `images/plush_<n>.png` for 1..PLUSH_COUNT plus the
- * secret images, into the shared plushList. Falls back to generated canvas
- * plushies if nothing loads, then assigns rarities.
+ * Load all plush PNGs progressively, in chunks, into the shared plushList.
+ * `onProgress(done, total)` is invoked after every chunk so the caller can
+ * unblock the game the moment a usable subset is ready and let the rest
+ * stream in — the game never waits for the full (~38 MB) download. Rarities
+ * are (re)assigned per chunk so picks always have valid tiers; secrets keep
+ * their 'secret' tier and are hidden until collected. Falls back to generated
+ * canvas plushies if nothing loads at all.
+ * @param {(done: number, total: number) => void} [onProgress]
+ * @returns {Promise<number>} number of plushies in the pool
  */
-export async function loadPlushImages() {
+export async function loadPlushImages(onProgress) {
   const urls = [];
   for (let i = 1; i <= PLUSH_COUNT; i++) {
     urls.push(`images/plush_${i}.png`);
@@ -68,21 +74,29 @@ export async function loadPlushImages() {
     urls.push(`images/${name}.png`);
   }
 
-  const settled = await mapPooled(urls.map((url) => () => loadImage(url)));
-  for (let i = 0; i < urls.length; i++) {
-    const img = settled[i];
-    if (!img) continue;
-    const isSecret = i >= PLUSH_COUNT;
-    state.plushList.push({
-      img,
-      key: urls[i],
-      rarity: isSecret ? 'secret' : null,
-      secret: isSecret
-    });
+  const CHUNK = 8;
+  for (let start = 0; start < urls.length; start += CHUNK) {
+    const chunk = urls.slice(start, start + CHUNK);
+    const settled = await mapPooled(chunk.map((url) => () => loadImage(url)));
+    for (let j = 0; j < chunk.length; j++) {
+      const img = settled[j];
+      if (!img) continue;
+      const idx = start + j;
+      const isSecret = idx >= PLUSH_COUNT;
+      state.plushList.push({
+        img,
+        key: urls[idx],
+        rarity: isSecret ? 'secret' : null,
+        secret: isSecret
+      });
+    }
+    // (Re)assign rarities as the pool grows so spawns have valid tiers.
+    assignRarities();
+    if (onProgress) onProgress(state.plushList.length, urls.length);
   }
 
   if (!state.plushList.length) makeFallbackPlushes();
-  assignRarities();
+  return state.plushList.length;
 }
 
 /**
