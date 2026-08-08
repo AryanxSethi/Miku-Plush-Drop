@@ -40,7 +40,7 @@ export const PLUSH_WEIGHTS = {
 /** Secret plush filenames (loaded from images/ in order, basename = file stem).
  *  These drop at a 1/1000 roll with their own pity counter, are hidden from
  *  the collection until first collected, and use a rainbow glow + boom sound. */
-export const SECRET_PLUSHES = ['eva', 'eva_0', 'eva_1', 'eva_02', 'eva_08', 'eva_13', 'eva_pen'];
+export const SECRET_PLUSHES = ['eva', 'eva_0', 'eva_1', 'eva_02', 'eva_08', 'eva_13', 'eva_pen', 'eva_misato'];
 
 /** Number of patterned plush images `images/plush_1.png … plush_PLUSH_COUNT.png`.
  *  Bump this when adding more plush_<n>.png files. */
@@ -58,7 +58,7 @@ export const RARITY_TARGETS = {
 /** Normal pity: force an un-collected new plush after this many non-new drops. */
 export const PITY_DROPS = 50;
 /** Base probability of a secret plush per drop. */
-export const SECRET_CHANCE = 1 / 1000;
+export const SECRET_CHANCE = 1 / 10000;
 /** Secret pity: force a secret after this many dry drops. */
 export const SECRET_PITY = 1000;
 /** Pile capacity — adaptive. `PLUSH_DENSITY` is the viewport budget (px²) per
