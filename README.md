@@ -117,7 +117,7 @@ stay stable across reloads.
 
 ### Secret rarity
 
-- **Chance**: 1/1000 per drop (`SECRET_CHANCE`).
+- **Chance**: 1/10000 per drop (`SECRET_CHANCE`).
 - **Pity**: if 1000 dry drops pass (`SECRET_PITY`), the next drop is a
   guaranteed secret.
 - **Pick**: prefers an un-collected secret; otherwise uniform among all
