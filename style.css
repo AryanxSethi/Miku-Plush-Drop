@@ -661,6 +661,11 @@ button.pill.off {
   opacity: 1;
 }
 
+/* Flipped variant: shown below the element when there's no room above it. */
+.tooltip.below {
+  transform: translate(-50%, 0);
+}
+
 /* ---------- 10. dark-theme extras ----------
    Elements that keep their own palette even when the design tokens change. */
 html[data-theme="dark"] .file-warning {

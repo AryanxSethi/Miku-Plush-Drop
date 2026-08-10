@@ -162,8 +162,17 @@ function showTooltip(el) {
   tooltip.textContent = tip;
   tooltip.hidden = false;
   const r = el.getBoundingClientRect();
-  tooltip.style.left = Math.round(r.left + r.width / 2) + 'px';
-  tooltip.style.top = Math.round(r.top - 8) + 'px';
+  const t = tooltip.offsetWidth;
+  const h = tooltip.offsetHeight;
+  // Center above the element; flip below when it would poke out the top.
+  const below = r.top - 8 - h < 8;
+  tooltip.classList.toggle('below', below);
+  tooltip.style.top = Math.round((below ? r.bottom + 8 : r.top - 8)) + 'px';
+  // Clamp horizontally so wide tooltips never leave the viewport.
+  const cx = r.left + r.width / 2;
+  const min = t / 2 + 8;
+  const max = (window.innerWidth || document.documentElement.clientWidth) - t / 2 - 8;
+  tooltip.style.left = Math.round(Math.min(Math.max(cx, min), Math.max(min, max))) + 'px';
 }
 
 function hideTooltip() {
